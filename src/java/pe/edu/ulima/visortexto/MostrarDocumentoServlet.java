@@ -20,10 +20,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-
 @WebServlet(name = "MostrarDocumentoServlet", urlPatterns = {"/mostrar"})
 public class MostrarDocumentoServlet extends HttpServlet {
 
+    /*
+    1.Recibe parametros del request
+    2. Realiza alguna tarea con los parámetros
+    3. Devuelve una respuesta
+     */
     @Override
     protected void doPost(
             HttpServletRequest req,
@@ -33,44 +37,12 @@ public class MostrarDocumentoServlet extends HttpServlet {
         String contenido = req.getParameter("contenido");
         String tipo = req.getParameter("tipo");
 
-        if (tipo.equals("pdf")) {
+        GestorRenderizado gestor = new GestorRenderizado();
+        ByteArrayOutputStream baos = gestor.renderizar(titulo, contenido, tipo);
 
-            resp.setContentType("application/pdf");
-            ModoVisualizadorAdapter adapter = new PDFAdapter();
+        baos.writeTo(resp.getOutputStream());
+        resp.getOutputStream().flush();
 
-            ByteArrayOutputStream baos = adapter.renderizar(titulo, contenido);
-            baos.writeTo(resp.getOutputStream());
-
-            resp.getOutputStream().flush();
-        } else if (tipo.equals("html")) {
-            ModoVisualizadorAdapter adapter = new HTMLAdapter();
-            ByteArrayOutputStream baos = adapter.renderizar(titulo, contenido);
-            baos.writeTo(resp.getOutputStream());
-            resp.getOutputStream().flush();
-        }
-
-    }
-
-    private ByteArrayOutputStream getByteArrayOutputStream(String ruta) throws IOException {
-
-        File file = new File(ruta);
-
-        FileInputStream fis = new FileInputStream(file);
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        byte[] buf = new byte[256];
-        try {
-            for (int readNum; (readNum = fis.read(buf)) != -1;) {
-                bos.write(buf, 0, readNum); //no doubt here is 0
-                //Writes len bytes from the specified byte array starting at offset off to this byte array output stream.
-                System.out.println("read " + readNum + " bytes,");
-            }
-
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-
-        return bos;
     }
 
 }
